@@ -206,3 +206,11 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 .DS_Store
+# Environment files
+.env
+
+# Database files
+*.db
+
+# Python cache
+__pycache__/
