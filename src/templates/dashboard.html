@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: white;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #1f1f1f;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+
+        .menu-wrapper {
+            position: relative;
+        }
+
+        .profile-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #4a90e2;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .menu-box {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 58px;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 8px;
+            min-width: 180px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        .menu-box.show {
+            display: block;
+        }
+
+        .menu-box a {
+            display: block;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .menu-box a:hover {
+            background: #333;
+        }
+
+        .dashboard-container {
+            max-width: 900px;
+            margin: 70px auto;
+            background: #1f1f1f;
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+
+        .dashboard-container h1 {
+            font-size: 52px;
+            margin-bottom: 15px;
+        }
+
+        .dashboard-container p {
+            color: #b3b3b3;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .info-box h2 {
+            margin-top: 0;
+            color: #4a90e2;
+        }
+
+        .info-box p {
+            margin-bottom: 0;
+            font-size: 18px;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <div class="logo">Smart Closet</div>
+
+        <div class="menu-wrapper">
+            <button class="profile-btn" onclick="toggleMenu()">
+                {{ profile[1][0]|upper }}
+            </button>
+
+            <div class="menu-box" id="dropdownMenu">
+                <a href="/preferences/{{ profile[0] }}">Set Preferences</a>
+                <a href="/recommendation/{{ profile[0] }}">View Recommendation</a>
+                <a href="/profiles/edit/{{ profile[0] }}">Edit Profile</a>
+                <a href="/">Switch Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <h1>Welcome, {{ profile[1] }}</h1>
+        <p>This is your Smart Closet dashboard.</p>
+
+        <div class="info-box">
+            <h2>Profile Overview</h2>
+            <p>
+                This dashboard will show your personalized weather settings,
+                clothing recommendations, and closet guidance.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById("dropdownMenu").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-btn')) {
+                let dropdown = document.getElementById("dropdownMenu");
+                if (dropdown.classList.contains("show")) {
+                    dropdown.classList.remove("show");
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create Profile</title>
+
+<style>
+body{
+font-family: Arial;
+background:#141414;
+color:white;
+text-align:center;
+padding-top:80px;
+}
+
+form{
+background:#222;
+width:320px;
+margin:auto;
+padding:30px;
+border-radius:10px;
+}
+
+input{
+width:90%;
+padding:10px;
+margin:10px;
+border-radius:5px;
+border:none;
+}
+
+button{
+padding:10px 20px;
+background:#4a90e2;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Create Profile</h1>
+
+<form method="post" action="/profiles/new">
+
+<input name="name" placeholder="Profile Name (ex: Rupak)" required>
+
+<button type="submit">Create Profile</button>
+
+</form>
+
+<br>
+
+<a href="/">Back</a>
+
+</body>
+</html>
