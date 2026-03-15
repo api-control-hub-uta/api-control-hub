@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Closet - Profiles</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            padding: 50px 20px;
+        }
+
+        h1 {
+            font-size: 64px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 18px;
+            margin-bottom: 50px;
+        }
+
+        .profiles {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+
+        .profile-card {
+            width: 140px;
+            color: #b3b3b3;
+        }
+
+        .profile-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .profile-link:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        }
+
+        .profile-name {
+            font-size: 20px;
+        }
+
+        .blue   { background: linear-gradient(135deg, #1e90ff, #6fb1ff); }
+        .red    { background: linear-gradient(135deg, #ff0000, #ff5a5a); }
+        .yellow { background: linear-gradient(135deg, #d4a200, #ffd95a); }
+        .teal   { background: linear-gradient(135deg, #004d66, #5f8f9e); }
+        .purple { background: linear-gradient(135deg, #7b2cbf, #c77dff); }
+
+        .actions a {
+            display: inline-block;
+            margin: 10px;
+            padding: 14px 28px;
+            border: 1px solid #777;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 8px;
+            transition: 0.3s ease;
+        }
+
+        .actions a:hover {
+            border-color: white;
+            color: white;
+            background-color: rgba(255,255,255,0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Who's using Smart Closet?</h1>
+        <div class="subtitle">Choose a profile to continue</div>
+
+        <div class="profiles">
+            {% set colors = ['blue', 'red', 'yellow', 'teal', 'purple'] %}
+
+            {% for profile in profiles %}
+            <div class="profile-card">
+                <a href="/dashboard/{{ profile[0] }}" class="profile-link">
+                    <div class="profile-avatar {{ colors[loop.index0 % 5] }}">
+                        {{ profile[1][0]|upper }}
+                    </div>
+                    <div class="profile-name">{{ profile[1] }}</div>
+                </a>
+            </div>
+            {% endfor %}
+
+            {% if profiles|length < 5 %}
+            <div class="profile-card">
+                <a href="/profiles/new" class="profile-link">
+                    <div class="profile-avatar purple">+</div>
+                    <div class="profile-name">Add Profile</div>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="actions">
+            <a href="/profiles">Manage Profiles</a>
+            <a href="/settings">Settings</a>
+        </div>
+    </div>
+</body>
+</html>
