@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Profiles</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            padding: 50px 20px;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .profiles {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .profile-card {
+            position: relative;
+            width: 170px;
+            text-align: center;
+        }
+
+        .profile-click {
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px auto;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 46px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            color: #d1d5db;
+        }
+
+        .manage-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 28px;
+            color: white;
+        }
+
+        .blue   { background: linear-gradient(135deg, #1e90ff, #6fb1ff); }
+        .red    { background: linear-gradient(135deg, #ff0000, #ff5a5a); }
+        .yellow { background: linear-gradient(135deg, #d4a200, #ffd95a); }
+        .teal   { background: linear-gradient(135deg, #004d66, #5f8f9e); }
+        .purple { background: linear-gradient(135deg, #7b2cbf, #c77dff); }
+
+        .action-box {
+            display: none;
+            background: #1f1f1f;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        }
+
+        .action-box.show {
+            display: block;
+        }
+
+        .action-box a,
+        .action-box button {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 15px;
+            cursor: pointer;
+            box-sizing: border-box;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #4a90e2;
+        }
+
+        .remove-btn {
+            background: #c0392b;
+        }
+
+        .lock-btn {
+            background: #8e44ad;
+        }
+
+        .upload-btn {
+            background: #16a085;
+        }
+
+        form {
+            margin: 0;
+        }
+
+        .back-link {
+            margin-top: 35px;
+        }
+
+        .back-link a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .back-link a:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Profiles</h1>
+        <div class="subtitle">Choose a profile to manage</div>
+
+        <div class="profiles">
+            {% set colors = ['blue', 'red', 'yellow', 'teal', 'purple'] %}
+
+            {% for profile in profiles %}
+            <div class="profile-card">
+                <div class="profile-click" onclick="toggleActions('actions-{{ profile[0] }}')">
+                    <div class="profile-avatar {{ colors[loop.index0 % 5] }}">
+                        {{ profile[1][0]|upper }}
+                        <div class="manage-icon">✎</div>
+                    </div>
+                    <div class="profile-name">{{ profile[1] }}</div>
+                </div>
+
+                <div class="action-box" id="actions-{{ profile[0] }}">
+                    <a class="edit-btn" href="/profiles/edit/{{ profile[0] }}">Edit</a>
+
+                    <form method="post" action="/profiles/delete/{{ profile[0] }}">
+                        <button class="remove-btn" type="submit">Remove</button>
+                    </form>
+
+                    <a class="lock-btn" href="/profiles/lock/{{ profile[0] }}">Lock</a>
+                    <a class="upload-btn" href="/profiles/upload/{{ profile[0] }}">Upload Image</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="back-link">
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleActions(actionId) {
+            let allBoxes = document.querySelectorAll(".action-box");
+
+            allBoxes.forEach(box => {
+                if (box.id !== actionId) {
+                    box.classList.remove("show");
+                }
+            });
+
+            let selectedBox = document.getElementById(actionId);
+            selectedBox.classList.toggle("show");
+        }
+    </script>
+</body>
+</html>
