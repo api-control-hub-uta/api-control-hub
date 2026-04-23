@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings - Smart Closet</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b0f14;
+            color: white;
+        }
+
+        /* ===== LIGHT MODE ===== */
+        body.light {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        body.light label {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        body.light .topbar {
+            background: rgba(255, 255, 255, 0.92);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        body.light .logo {
+            color: #2563eb;
+        }
+
+        body.light .settings-box {
+            background: rgba(255, 255, 255, 0.96);
+            color: #111827;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+        }
+
+        body.light h1 {
+            color: #111827;
+        }
+
+        body.light h2 {
+            color: #2563eb;
+        }
+
+        body.light p,
+        body.light label,
+        body.light .subtitle {
+            color: #374151;
+        }
+
+        body.light input,
+        body.light select {
+            background: #ffffff;
+            color: #111827;
+            border: 1px solid #d1d5db;
+        }
+
+        body.light input::placeholder {
+            color: #6b7280;
+        }
+
+        body.light .back-btn {
+            background: #ffffff;
+            color: #111827;
+            border: 1px solid #d1d5db;
+        }
+
+        body.light .save-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #111827;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .settings-box {
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #ffffff;
+            font-size: 40px;
+        }
+
+        h2 {
+            color: #60a5fa;
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #d1d5db;
+            letter-spacing: 0.3px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+            background: #111827;
+            color: white;
+            font-size: 15px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .save-btn, .back-btn {
+            padding: 12px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 15px;
+        }
+
+        .save-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .back-btn {
+            background: #1f2937;
+            color: white;
+            border: 1px solid #374151;
+        }
+    </style>
+</head>
+<body class="{{ settings[6] }}">
+    <div class="topbar">
+        <div class="logo">Smart Closet</div>
+    </div>
+
+    <div class="container">
+        <div class="settings-box">
+            <h1>Settings</h1>
+            <p class="subtitle">Customize Smart Closet for {{ profile[1] }}</p>
+
+            <form method="post" action="/settings/{{ profile[0] }}">
+                <h2>Location</h2>
+                <label for="location">City, State, Country Code</label>
+                <input type="text" id="location" name="location" value="{{ settings[0] }}" placeholder="Arlington,TX,US">
+
+                <h2>Temperature Units</h2>
+                <label for="temperature_unit">Units</label>
+                <select id="temperature_unit" name="temperature_unit">
+                    <option value="fahrenheit" {% if settings[1] == 'fahrenheit' %}selected{% endif %}>Fahrenheit</option>
+                    <option value="celsius" {% if settings[1] == 'celsius' %}selected{% endif %}>Celsius</option>
+                </select>
+
+                <h2>LED Preferences</h2>
+
+                <label for="led_hot_color">Hot Weather LED Color</label>
+                <select id="led_hot_color" name="led_hot_color">
+                    <option value="red" {% if settings[2] == 'red' %}selected{% endif %}>Red</option>
+                    <option value="orange" {% if settings[2] == 'orange' %}selected{% endif %}>Orange</option>
+                    <option value="yellow" {% if settings[2] == 'yellow' %}selected{% endif %}>Yellow</option>
+                    <option value="green" {% if settings[2] == 'green' %}selected{% endif %}>Green</option>
+                    <option value="blue" {% if settings[2] == 'blue' %}selected{% endif %}>Blue</option>
+                    <option value="purple" {% if settings[2] == 'purple' %}selected{% endif %}>Purple</option>
+                </select>
+
+                <label for="led_moderate_color">Moderate Weather LED Color</label>
+                <select id="led_moderate_color" name="led_moderate_color">
+                    <option value="red" {% if settings[3] == 'red' %}selected{% endif %}>Red</option>
+                    <option value="orange" {% if settings[3] == 'orange' %}selected{% endif %}>Orange</option>
+                    <option value="yellow" {% if settings[3] == 'yellow' %}selected{% endif %}>Yellow</option>
+                    <option value="green" {% if settings[3] == 'green' %}selected{% endif %}>Green</option>
+                    <option value="blue" {% if settings[3] == 'blue' %}selected{% endif %}>Blue</option>
+                    <option value="purple" {% if settings[3] == 'purple' %}selected{% endif %}>Purple</option>
+                </select>
+
+                <label for="led_cold_color">Cold Weather LED Color</label>
+                <select id="led_cold_color" name="led_cold_color">
+                    <option value="red" {% if settings[4] == 'red' %}selected{% endif %}>Red</option>
+                    <option value="orange" {% if settings[4] == 'orange' %}selected{% endif %}>Orange</option>
+                    <option value="yellow" {% if settings[4] == 'yellow' %}selected{% endif %}>Yellow</option>
+                    <option value="green" {% if settings[4] == 'green' %}selected{% endif %}>Green</option>
+                    <option value="blue" {% if settings[4] == 'blue' %}selected{% endif %}>Blue</option>
+                    <option value="purple" {% if settings[4] == 'purple' %}selected{% endif %}>Purple</option>
+                </select>
+
+                <label for="led_extreme_cold_color">Extreme Cold LED Color</label>
+                <select id="led_extreme_cold_color" name="led_extreme_cold_color">
+                    <option value="red" {% if settings[5] == 'red' %}selected{% endif %}>Red</option>
+                    <option value="orange" {% if settings[5] == 'orange' %}selected{% endif %}>Orange</option>
+                    <option value="yellow" {% if settings[5] == 'yellow' %}selected{% endif %}>Yellow</option>
+                    <option value="green" {% if settings[5] == 'green' %}selected{% endif %}>Green</option>
+                    <option value="blue" {% if settings[5] == 'blue' %}selected{% endif %}>Blue</option>
+                    <option value="purple" {% if settings[5] == 'purple' %}selected{% endif %}>Purple</option>
+                </select>
+
+                <h2>Theme</h2>
+                <label for="theme">Dashboard Theme</label>
+                <select id="theme" name="theme">
+                    <option value="dark" {% if settings[6] == 'dark' %}selected{% endif %}>Dark Mode</option>
+                    <option value="light" {% if settings[6] == 'light' %}selected{% endif %}>Light Mode</option>
+                </select>
+
+                <div class="button-row">
+                    <button type="submit" class="save-btn">Save Settings</button>
+                    <a href="/dashboard/{{ profile[0] }}" class="back-btn">Back to Dashboard</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

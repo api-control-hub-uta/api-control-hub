@@ -214,3 +214,6 @@ __marimo__/
 
 # Python cache
 __pycache__/
+# Custom ignores
+*backup*
+.env

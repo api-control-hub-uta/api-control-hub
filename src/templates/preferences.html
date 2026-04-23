@@ -51,6 +51,15 @@
             font-size: 18px;
         }
 
+        .range-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .range-row input {
+            width: 50%;
+        }
+
         input {
             width: 100%;
             padding: 12px;
@@ -58,6 +67,12 @@
             border: none;
             font-size: 16px;
             box-sizing: border-box;
+        }
+
+        .hint {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 6px;
         }
 
         button {
@@ -95,24 +110,34 @@
     <div class="container">
         <h1>Set Preferences</h1>
         <div class="subtitle">
-            Tell us your temperature comfort levels and what you prefer to wear in each condition.
+            Enter your comfort temperature ranges and what you prefer to wear in each condition.
         </div>
 
         <form method="post" action="/preferences/{{ profile[0] }}">
 
             <h2>Temperature Preferences</h2>
 
-            <label>At what temperature do you feel hot? (°F)</label>
-            <input type="number" name="hot_threshold" placeholder="Example: 85" required>
+            <label>Hot Range</label>
+            <div class="range-row">
+                <input type="number" name="hot_min" placeholder="Min" required>
+                <input type="number" name="hot_max" placeholder="Max" required>
+            </div>
 
-             <label>At what temperature do you feel Moderate? (°F)</label>
-            <input type="number" name="moderate_threshold" placeholder="Example: 70" required>
+            <label>Moderate Range</label>
+            <div class="range-row">
+                <input type="number" name="moderate_min" placeholder="Min" required>
+                <input type="number" name="moderate_max" placeholder="Max" required>
+            </div>
 
-            <label>At what temperature do you feel cold? (°F)</label>
-            <input type="number" name="cold_threshold" placeholder="Example: 50" required>
+            <label>Cold Range</label>
+            <div class="range-row">
+                <input type="number" name="cold_min" placeholder="Min" required>
+                <input type="number" name="cold_max" placeholder="Max" required>
+            </div>
 
-            <label>At what temperature do you feel extreme cold? (°F)</label>
-            <input type="number" name="extreme_cold_threshold" placeholder="Example: 35" required>
+            <div class="hint">
+                Extreme cold will be treated as temperatures below your cold range.
+            </div>
 
             <h2>Clothing Preferences</h2>
 
