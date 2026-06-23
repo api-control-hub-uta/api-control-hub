@@ -328,28 +328,53 @@ def get_weather_category(temp, preferences):
         return "extreme_cold"
 
 #dashboard color to WLED
+# dashboard weather category to WLED zone
 def apply_dashboard_led_color(category, led_hot_color, led_moderate_color, led_cold_color, led_extreme_cold_color):
-    if category == "hot":
-        chosen_color = led_hot_color
-    elif category == "moderate":
-        chosen_color = led_moderate_color
-    elif category == "cold":
-        chosen_color = led_cold_color
-    else:
-        chosen_color = led_extreme_cold_color
+    led_zones = {
+        "hot": (0, 15),
+        "moderate": (15, 30),
+        "cold": (30, 45),
+        "extreme_cold": (45, 60)
+    }
 
+    color_map = {
+        "hot": led_hot_color,
+        "moderate": led_moderate_color,
+        "cold": led_cold_color,
+        "extreme_cold": led_extreme_cold_color
+    }
+
+    chosen_color = color_map.get(category, led_extreme_cold_color)
     rgb = color_name_to_rgb(chosen_color)
+
+    segments = []
+
+    for index, (zone_name, zone_range) in enumerate(led_zones.items()):
+        start_led, stop_led = zone_range
+
+        if zone_name == category:
+            zone_color = rgb
+        else:
+            zone_color = [0, 0, 0]
+
+        segments.append({
+            "id": index,
+            "start": start_led,
+            "stop": stop_led,
+            "on": True,
+            "bri": 180,
+            "col": [zone_color],
+            "fx": 0
+        })
 
     payload = {
         "on": True,
         "bri": 180,
-        "seg": [{
-            "col": [rgb, [0, 0, 0], [0, 0, 0]]
-        }]
+        "seg": segments
     }
 
     success = set_wled_state(payload)
-    return chosen_color, rgb, success        
+    return chosen_color, rgb, success      
 
 # Recommendation logic
 def get_clothing_recommendation(temp, preferences):
@@ -730,6 +755,53 @@ def save_settings(
     conn.close()
 
     return RedirectResponse(url=f"/dashboard/{profile_id}", status_code=303)
+
+
+@app.get("/test-wled-zone/{category}")
+def test_wled_zone(category: str, color: str = "white"):
+    led_zones = {
+        "hot": (0, 15),
+        "moderate": (15, 30),
+        "cold": (30, 45),
+        "extreme_cold": (45, 60)
+    }
+
+    if category not in led_zones:
+        return {"success": False, "error": "Invalid category"}
+
+    rgb = color_name_to_rgb(color)
+
+    segments = []
+
+    for index, (zone_name, zone_range) in enumerate(led_zones.items()):
+        start_led, stop_led = zone_range
+        zone_color = rgb if zone_name == category else [0, 0, 0]
+
+        segments.append({
+            "id": index,
+            "start": start_led,
+            "stop": stop_led,
+            "on": True,
+            "bri": 255,
+            "col": [zone_color],
+            "fx": 0
+        })
+
+    payload = {
+        "on": True,
+        "bri": 255,
+        "seg": segments
+    }
+
+    success = set_wled_state(payload)
+
+    return {
+        "success": success,
+        "category": category,
+        "color": color,
+        "rgb": rgb,
+        "zones": led_zones
+    }
 
     #Temporary
 @app.get("/test-wled")
