@@ -24,9 +24,23 @@ create_tables()
 
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 
-WLED_IP = "192.168.1.165"   
-WLED_JSON_URL = f"http://{WLED_IP}/json/state"
-WLED_INFO_URL = f"http://{WLED_IP}/json/info"
+DEFAULT_WLED_IP = "192.168.1.165"
+
+PROFILE_WLED_MAP = {
+    1: "192.168.1.165",
+    2: "192.168.1.165",
+    3: "192.168.1.165",
+    4: "192.168.1.165"
+}
+
+def get_wled_json_url(wled_ip):
+    return f"http://{wled_ip}/json/state"
+
+def get_wled_info_url(wled_ip):
+    return f"http://{wled_ip}/json/info"
+
+def get_wled_ip_for_profile(profile_id):
+    return PROFILE_WLED_MAP.get(profile_id, DEFAULT_WLED_IP)
 
 
 # HOME PAGE
@@ -264,9 +278,9 @@ def get_current_weather(location="Arlington,TX,US", temperature_unit="fahrenheit
         return None
 
  #WLED
-def get_wled_info():
+def get_wled_info(wled_ip=DEFAULT_WLED_IP):
     try:
-        response = requests.get(WLED_INFO_URL, timeout=3)
+        response = requests.get(get_wled_info_url(wled_ip), timeout=3)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -274,9 +288,9 @@ def get_wled_info():
         return None
 
 
-def get_wled_state():
+def get_wled_state(wled_ip=DEFAULT_WLED_IP):
     try:
-        response = requests.get(WLED_JSON_URL, timeout=3)
+        response = requests.get(get_wled_json_url(wled_ip), timeout=3)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -284,14 +298,16 @@ def get_wled_state():
         return None
 
 
-def set_wled_state(payload):
+def set_wled_state(payload, wled_ip=DEFAULT_WLED_IP):
     try:
-        response = requests.post(WLED_JSON_URL, json=payload, timeout=3)
+        response = requests.post(get_wled_json_url(wled_ip), json=payload, timeout=3)
         response.raise_for_status()
         return True
     except Exception as e:
         print("WLED set error:", e)
         return False
+
+
 #Rgb Convertor
 def color_name_to_rgb(color_name):
     color_map = {
@@ -329,7 +345,7 @@ def get_weather_category(temp, preferences):
 
 #dashboard color to WLED
 # dashboard weather category to WLED zone
-def apply_dashboard_led_color(category, led_hot_color, led_moderate_color, led_cold_color, led_extreme_cold_color):
+def apply_dashboard_led_color(category, led_hot_color, led_moderate_color, led_cold_color, led_extreme_cold_color, wled_ip=DEFAULT_WLED_IP):
     led_zones = {
         "hot": (0, 15),
         "moderate": (15, 30),
@@ -373,8 +389,8 @@ def apply_dashboard_led_color(category, led_hot_color, led_moderate_color, led_c
         "seg": segments
     }
 
-    success = set_wled_state(payload)
-    return chosen_color, rgb, success      
+    success = set_wled_state(payload, wled_ip)
+    return chosen_color, rgb, success    
 
 # Recommendation logic
 def get_clothing_recommendation(temp, preferences):
@@ -474,6 +490,8 @@ def dashboard(profile_id: int, request: Request):
         recommendation_text = get_clothing_recommendation(temp_for_logic, preferences)
         weather_category = get_weather_category(temp_for_logic, preferences)
         city_name = f'{weather["city"]}, {weather["country"]}'
+
+        wled_ip = get_wled_ip_for_profile(profile_id)
 
         if weather_category:
             selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
