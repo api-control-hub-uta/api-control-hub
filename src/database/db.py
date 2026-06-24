@@ -18,11 +18,32 @@ def create_tables():
         """)
 
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS preferences (
+CREATE TABLE IF NOT EXISTS preferences (
+    user_id INTEGER PRIMARY KEY,
+    hot_min INTEGER,
+    hot_max INTEGER,
+    moderate_min INTEGER,
+    moderate_max INTEGER,
+    cold_min INTEGER,
+    cold_max INTEGER,
+    hot_clothing TEXT,
+    moderate_clothing TEXT,
+    cold_clothing TEXT,
+    extreme_cold_clothing TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+""")
+
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
             user_id INTEGER PRIMARY KEY,
-            cold_threshold INTEGER NOT NULL,
-            hot_threshold INTEGER NOT NULL,
-            rain_preference TEXT NOT NULL,
+            location TEXT DEFAULT 'Arlington,TX,US',
+            temperature_unit TEXT DEFAULT 'fahrenheit',
+            led_hot_color TEXT DEFAULT 'red',
+            led_moderate_color TEXT DEFAULT 'yellow',
+            led_cold_color TEXT DEFAULT 'blue',
+            led_extreme_cold_color TEXT DEFAULT 'purple',
+            theme TEXT DEFAULT 'dark',
             FOREIGN KEY(user_id) REFERENCES users(id)
         );
         """)
