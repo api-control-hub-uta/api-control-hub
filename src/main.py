@@ -27,10 +27,19 @@ OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 DEFAULT_WLED_IP = "192.168.1.165"
 
 PROFILE_WLED_MAP = {
-    1: "192.168.1.165",
-    2: "192.168.1.165",
-    3: "192.168.1.165",
-    4: "192.168.1.165"
+    2: "192.168.1.165",   #Closet 1
+    8: "192.168.1.165",   #Closet 2
+    12: "192.168.1.165",  #Closet 3
+    13: "192.168.1.165",  #Closet 4
+    14: "192.168.1.165"   #Closet 5
+}
+
+PROFILE_CLOSET_MAP = {
+    2: "Closet 1",
+    8: "Closet 2",
+    12: "Closet 3",
+    13: "Closet 4",
+    14: "Closet 5"
 }
 
 def get_wled_json_url(wled_ip):
@@ -41,6 +50,9 @@ def get_wled_info_url(wled_ip):
 
 def get_wled_ip_for_profile(profile_id):
     return PROFILE_WLED_MAP.get(profile_id, DEFAULT_WLED_IP)
+
+def get_closet_name_for_profile(profile_id):
+    return PROFILE_CLOSET_MAP.get(profile_id, "Default Closet")    
 
 
 # HOME PAGE
@@ -469,6 +481,9 @@ def dashboard(profile_id: int, request: Request):
     led_extreme_cold_color = settings[5]
     theme = settings[6]
 
+    closet_name = get_closet_name_for_profile(profile_id)
+    wled_ip = get_wled_ip_for_profile(profile_id)
+
     weather = get_current_weather(location, temperature_unit)
 
     recommendation_text = None
@@ -490,8 +505,6 @@ def dashboard(profile_id: int, request: Request):
         recommendation_text = get_clothing_recommendation(temp_for_logic, preferences)
         weather_category = get_weather_category(temp_for_logic, preferences)
         city_name = f'{weather["city"]}, {weather["country"]}'
-
-        wled_ip = get_wled_ip_for_profile(profile_id)
 
         if weather_category:
             selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
@@ -537,6 +550,8 @@ def dashboard(profile_id: int, request: Request):
             "led_cold_color": led_cold_color,
             "led_extreme_cold_color": led_extreme_cold_color,
             "weather_category": weather_category,
+            "closet_name": closet_name,
+            "wled_ip": wled_ip,
             "selected_led_color": selected_led_color,
             "selected_led_rgb": selected_led_rgb,
             "wled_applied": wled_applied,

@@ -451,6 +451,15 @@ body.light .weather-icon {
     <div class="info-box">
         <h2>Hub Status</h2>
         <div class="status-row">
+            <span>Assigned Closet</span>
+            <span class="badge active">{{ closet_name }}</span>
+        </div>
+
+        <div class="status-row">
+            <span>WLED Controller</span>
+            <span class="badge active">{{ wled_ip }}</span>
+        </div>
+        <div class="status-row">
             <span>Dashboard</span>
             <span class="badge online">Online</span>
         </div>
