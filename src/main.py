@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import requests
 import os
+import time
 from fastapi.staticfiles import StaticFiles
 from src.database.db import get_conn, create_tables, DB_PATH
 from dotenv import load_dotenv
@@ -48,11 +49,23 @@ def get_wled_json_url(wled_ip):
 def get_wled_info_url(wled_ip):
     return f"http://{wled_ip}/json/info"
 
-def get_wled_ip_for_profile(profile_id):
-    return PROFILE_WLED_MAP.get(profile_id, DEFAULT_WLED_IP)
+def get_closet_for_profile(profile_id):
+    conn = get_conn()
+    cur = conn.cursor()
 
-def get_closet_name_for_profile(profile_id):
-    return PROFILE_CLOSET_MAP.get(profile_id, "Default Closet")    
+    cur.execute("""
+        SELECT closet_name, wled_ip, status
+        FROM closets
+        WHERE user_id = ?
+    """, (profile_id,))
+
+    closet = cur.fetchone()
+    conn.close()
+
+    if closet:
+        return closet
+
+    return ("Default Closet", DEFAULT_WLED_IP, "unassigned")  
 
 
 # HOME PAGE
@@ -230,7 +243,187 @@ def settings_page(profile_id: int, request: Request):
             "settings": settings
         }
     )
+# Manage Closet
+@app.get("/closet/{profile_id}", response_class=HTMLResponse)
+def closet_page(request: Request, profile_id: int):
 
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM users WHERE id = ?", (profile_id,))
+    profile = cur.fetchone()
+
+    
+    cur.execute("""
+        SELECT closet_name, wled_ip, status
+        FROM closets
+        WHERE user_id = ?
+    """, (profile_id,))
+    closet = cur.fetchone()
+
+    
+    cur.execute("""
+        SELECT theme
+        FROM settings
+        WHERE user_id = ?
+    """, (profile_id,))
+    theme_row = cur.fetchone()
+
+    theme = theme_row[0] if theme_row else "dark"
+
+    conn.close()
+
+    return templates.TemplateResponse(
+        request,
+        "closet.html",
+        {
+            "profile": profile,
+            "closet": closet,
+            "theme": theme
+        }
+    )
+
+@app.post("/closet/{profile_id}")
+def update_closet(
+    profile_id: int,
+    closet_name: str = Form(...),
+    wled_ip: str = Form(...)
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE closets
+        SET closet_name = ?,
+            wled_ip = ?,
+            status = 'configured'
+        WHERE user_id = ?
+    """, (closet_name, wled_ip, profile_id))
+
+    conn.commit()
+    conn.close()
+
+    return RedirectResponse(url=f"/closet/{profile_id}", status_code=303)
+
+
+@app.get("/closet/{profile_id}/test")
+def test_closet(profile_id: int):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT wled_ip
+        FROM closets
+        WHERE user_id = ?
+    """, (profile_id,))
+
+    closet = cur.fetchone()
+    conn.close()
+
+    if not closet:
+        return {"success": False, "error": "No closet assigned"}
+
+    wled_ip = closet[0]
+
+    payload_on = {
+    "on": True,
+    "bri": 255,
+    "seg": [
+        {
+            "id": 0,
+            "start": 0,
+            "stop": 60,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 255, 0]],
+            "fx": 0
+        },
+        {
+            "id": 1,
+            "start": 15,
+            "stop": 30,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 255, 0]],
+            "fx": 0
+        },
+        {
+            "id": 2,
+            "start": 30,
+            "stop": 45,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 255, 0]],
+            "fx": 0
+        },
+        {
+            "id": 3,
+            "start": 45,
+            "stop": 60,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 255, 0]],
+            "fx": 0
+        }
+    ]
+}
+
+    payload_off = {
+    "on": True,
+    "bri": 255,
+    "seg": [
+        {
+            "id": 0,
+            "start": 0,
+            "stop": 15,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 0, 0]],
+            "fx": 0
+        },
+        {
+            "id": 1,
+            "start": 15,
+            "stop": 30,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 0, 0]],
+            "fx": 0
+        },
+        {
+            "id": 2,
+            "start": 30,
+            "stop": 45,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 0, 0]],
+            "fx": 0
+        },
+        {
+            "id": 3,
+            "start": 45,
+            "stop": 60,
+            "on": True,
+            "bri": 255,
+            "col": [[0, 0, 0]],
+            "fx": 0
+        }
+    ]
+}
+
+    try:
+        set_wled_state(payload_on, wled_ip)
+        time.sleep(2)
+        set_wled_state(payload_off, wled_ip)
+
+        return {
+            "success": True,
+            "message": "Closet test completed",
+            "wled_ip": wled_ip
+        }
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}    
 
 # Fetch Weather
 def get_current_weather(location="Arlington,TX,US", temperature_unit="fahrenheit"):
@@ -481,8 +674,7 @@ def dashboard(profile_id: int, request: Request):
     led_extreme_cold_color = settings[5]
     theme = settings[6]
 
-    closet_name = get_closet_name_for_profile(profile_id)
-    wled_ip = get_wled_ip_for_profile(profile_id)
+    closet_name, wled_ip, closet_status = get_closet_for_profile(profile_id)
 
     weather = get_current_weather(location, temperature_unit)
 
@@ -551,10 +743,12 @@ def dashboard(profile_id: int, request: Request):
             "led_extreme_cold_color": led_extreme_cold_color,
             "weather_category": weather_category,
             "closet_name": closet_name,
+            "closet_status": closet_status,
             "wled_ip": wled_ip,
             "selected_led_color": selected_led_color,
             "selected_led_rgb": selected_led_rgb,
             "wled_applied": wled_applied,
+
         }
     )
 

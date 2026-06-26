@@ -47,6 +47,16 @@ CREATE TABLE IF NOT EXISTS preferences (
             FOREIGN KEY(user_id) REFERENCES users(id)
         );
         """)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS closets (
+            closet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE,
+            closet_name TEXT DEFAULT 'Closet 1',
+            wled_ip TEXT DEFAULT '192.168.1.165',
+            status TEXT DEFAULT 'offline',
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        """)
 
         conn.commit()
 
