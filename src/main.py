@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 import os
 import time
+from datetime import datetime 
 from fastapi.staticfiles import StaticFiles
 from src.database.db import get_conn, create_tables, DB_PATH
 from dotenv import load_dotenv
@@ -26,22 +27,6 @@ create_tables()
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 
 DEFAULT_WLED_IP = "192.168.1.165"
-
-PROFILE_WLED_MAP = {
-    2: "192.168.1.165",   #Closet 1
-    8: "192.168.1.165",   #Closet 2
-    12: "192.168.1.165",  #Closet 3
-    13: "192.168.1.165",  #Closet 4
-    14: "192.168.1.165"   #Closet 5
-}
-
-PROFILE_CLOSET_MAP = {
-    2: "Closet 1",
-    8: "Closet 2",
-    12: "Closet 3",
-    13: "Closet 4",
-    14: "Closet 5"
-}
 
 def get_wled_json_url(wled_ip):
     return f"http://{wled_ip}/json/state"
@@ -260,6 +245,10 @@ def closet_page(request: Request, profile_id: int):
         WHERE user_id = ?
     """, (profile_id,))
     closet = cur.fetchone()
+    controller_online = False
+
+    if closet:
+         controller_online = check_wled_online(closet[1])
 
     
     cur.execute("""
@@ -279,7 +268,8 @@ def closet_page(request: Request, profile_id: int):
         {
             "profile": profile,
             "closet": closet,
-            "theme": theme
+            "theme": theme,
+            "controller_online": controller_online
         }
     )
 
@@ -306,7 +296,7 @@ def update_closet(
     return RedirectResponse(url=f"/closet/{profile_id}", status_code=303)
 
 
-@app.get("/closet/{profile_id}/test")
+@app.post("/closet/{profile_id}/test")
 def test_closet(profile_id: int):
     conn = get_conn()
     cur = conn.cursor()
@@ -492,6 +482,10 @@ def get_wled_info(wled_ip=DEFAULT_WLED_IP):
         print("WLED info error:", e)
         return None
 
+def check_wled_online(wled_ip):
+    info = get_wled_info(wled_ip)
+    return info is not None        
+
 
 def get_wled_state(wled_ip=DEFAULT_WLED_IP):
     try:
@@ -675,6 +669,7 @@ def dashboard(profile_id: int, request: Request):
     theme = settings[6]
 
     closet_name, wled_ip, closet_status = get_closet_for_profile(profile_id)
+    controller_online = check_wled_online(wled_ip)
 
     weather = get_current_weather(location, temperature_unit)
 
@@ -699,13 +694,14 @@ def dashboard(profile_id: int, request: Request):
         city_name = f'{weather["city"]}, {weather["country"]}'
 
         if weather_category:
-            selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
-                weather_category,
-                led_hot_color,
-                led_moderate_color,
-                led_cold_color,
-                led_extreme_cold_color
-            )
+           selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
+           weather_category,
+           led_hot_color,
+           led_moderate_color,
+           led_cold_color,
+           led_extreme_cold_color,
+           wled_ip
+           )
 
     if preferences and temperature_unit == "celsius":
         display_preferences = (
@@ -745,9 +741,15 @@ def dashboard(profile_id: int, request: Request):
             "closet_name": closet_name,
             "closet_status": closet_status,
             "wled_ip": wled_ip,
+            "controller_online": controller_online,
+            "temperature_unit": temperature_unit,
+            "location": location,
+            "last_weather_update": datetime.now().strftime("%I:%M %p"),
+            "weather_api_status": "Connected" if weather else "Offline",
             "selected_led_color": selected_led_color,
             "selected_led_rgb": selected_led_rgb,
             "wled_applied": wled_applied,
+
 
         }
     )

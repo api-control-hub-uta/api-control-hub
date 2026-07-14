@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Manage Closet - Smart Closet</title>
+
     <style>
         body {
             margin: 0;
@@ -60,6 +61,10 @@
             padding: 20px;
         }
 
+        .closet-card {
+            margin-top: 18px;
+        }
+
         .section-title {
             color: #60a5fa;
             font-size: 22px;
@@ -93,11 +98,16 @@
             font-weight: bold;
         }
 
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.16);
+            color: #fca5a5;
+        }
+
         .muted {
             margin-top: 12px;
             color: #9ca3af;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         label {
@@ -125,7 +135,7 @@
         input:focus {
             outline: none;
             border-color: #3b82f6;
-            box-shadow: 0 0 12px rgba(59,130,246,.4);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
         }
 
         .button-row {
@@ -144,6 +154,17 @@
             border: none;
             cursor: pointer;
             font-size: 15px;
+            transition: transform 0.15s, opacity 0.15s, background 0.15s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .back-btn {
@@ -157,16 +178,59 @@
             color: white;
         }
 
+        .test-btn:hover {
+            background: #15803d;
+        }
+
         .save-btn {
             background: #2563eb;
             color: white;
+        }
+
+        .save-btn:hover {
+            background: #1d4ed8;
         }
 
         .empty-message {
             color: #fca5a5;
         }
 
+        .test-result {
+            display: none;
+            margin-top: 18px;
+            padding: 15px 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .test-result.testing {
+            display: block;
+            background: rgba(59, 130, 246, 0.16);
+            border: 1px solid rgba(96, 165, 250, 0.45);
+            color: #93c5fd;
+        }
+
+        .test-result.success {
+            display: block;
+            background: rgba(34, 197, 94, 0.16);
+            border: 1px solid rgba(34, 197, 94, 0.45);
+            color: #86efac;
+        }
+
+        .test-result.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+
         @media (max-width: 800px) {
+            .topbar {
+                padding: 16px 22px;
+            }
+
             .top-grid {
                 grid-template-columns: 1fr;
             }
@@ -178,140 +242,331 @@
             h1 {
                 font-size: 34px;
             }
+
+            .box {
+                padding: 22px;
+            }
         }
+
         /* ===== LIGHT MODE ===== */
-body.light {
-    background: #f3f4f6;
-    color: #111827;
-}
 
-body.light .topbar {
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-}
+        body.light {
+            background: #f3f4f6;
+            color: #111827;
+        }
 
-body.light .logo {
-    color: #2563eb;
-}
+        body.light .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-body.light .box {
-    background: white;
-    color: #111827;
-    box-shadow: 0 10px 30px rgba(0,0,0,.08);
-}
+        body.light .logo {
+            color: #2563eb;
+        }
 
-body.light .card {
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-}
+        body.light .box {
+            background: white;
+            color: #111827;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
 
-body.light h1 {
-    color: #111827;
-}
+        body.light .card {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+        }
 
-body.light .subtitle {
-    color: #4b5563;
-}
+        body.light h1 {
+            color: #111827;
+        }
 
-body.light .section-title {
-    color: #2563eb;
-    border-bottom: 1px solid #d1d5db;
-}
+        body.light .subtitle {
+            color: #4b5563;
+        }
 
-body.light .label-small {
-    color: #6b7280;
-}
+        body.light .section-title {
+            color: #2563eb;
+            border-bottom: 1px solid #d1d5db;
+        }
 
-body.light .value-large {
-    color: #111827;
-}
+        body.light .label-small {
+            color: #6b7280;
+        }
 
-body.light label {
-    color: #374151;
-}
+        body.light .value-large {
+            color: #111827;
+        }
 
-body.light input {
-    background: white;
-    color: #111827;
-    border: 2px solid #d1d5db;
-}
+        body.light label {
+            color: #374151;
+        }
 
-body.light input:focus {
-    border-color: #2563eb;
-}
+        body.light input {
+            background: white;
+            color: #111827;
+            border: 2px solid #d1d5db;
+        }
 
-body.light .muted {
-    color: #6b7280;
-}
+        body.light input:focus {
+            border-color: #2563eb;
+        }
 
-body.light .status-badge {
-    background: #dcfce7;
-    color: #15803d;
-}
+        body.light .muted {
+            color: #6b7280;
+        }
 
-body.light .back-btn {
-    background: white;
-    color: #111827;
-    border: 1px solid #d1d5db;
-}
+        body.light .status-badge {
+            background: #dcfce7;
+            color: #15803d;
+        }
 
-body.light .back-btn:hover {
-    background: #f3f4f6;
-}
+        body.light .status-badge.offline {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        body.light .back-btn {
+            background: white;
+            color: #111827;
+            border: 1px solid #d1d5db;
+        }
+
+        body.light .back-btn:hover {
+            background: #f3f4f6;
+        }
+
+        body.light .test-result.testing {
+            background: #dbeafe;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+
+        body.light .test-result.success {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #15803d;
+        }
+
+        body.light .test-result.error {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
     </style>
 </head>
 
 <body class="{{ theme }}">
+
     <div class="topbar">
         <div class="logo">Smart Closet</div>
     </div>
 
     <div class="container">
         <div class="box">
+
             <h1>Manage Closet</h1>
-            <p class="subtitle">Configure the assigned closet hardware and WLED controller.</p>
+
+            <p class="subtitle">
+                Configure the assigned closet hardware and WLED controller.
+            </p>
 
             {% if closet %}
+
                 <form method="post" action="/closet/{{ profile[0] }}">
 
                     <div class="top-grid">
+
                         <div class="card">
                             <div class="section-title">User Information</div>
+
                             <div class="label-small">Name</div>
-                            <div class="value-large">{{ profile[1] }}</div>
+
+                            <div class="value-large">
+                                {{ profile[1] }}
+                            </div>
                         </div>
 
                         <div class="card">
                             <div class="section-title">Controller Status</div>
-                            <div class="status-badge">🟢 Online</div>
-                            <div class="muted">Controller is configured and ready for closet testing.</div>
+
+                            {% if controller_online %}
+
+                                <div class="status-badge">
+                                    🟢 Online
+                                </div>
+
+                                <div class="muted">
+                                    Controller at
+                                    <strong>{{ closet[1] }}</strong>
+                                    is online and ready for closet testing.
+                                </div>
+
+                            {% else %}
+
+                                <div class="status-badge offline">
+                                    🔴 Offline
+                                </div>
+
+                                <div class="muted">
+                                    Controller at
+                                    <strong>{{ closet[1] }}</strong>
+                                    is not reachable. Check the controller power,
+                                    Wi-Fi connection, or IP address.
+                                </div>
+
+                            {% endif %}
                         </div>
+
                     </div>
 
-                    <div class="card">
-                        <div class="section-title">Closet Configuration</div>
+                    <div class="card closet-card">
 
-                        <label>Closet Name</label>
-                        <input type="text" name="closet_name" value="{{ closet[0] }}" required>
+                        <div class="section-title">
+                            Closet Configuration
+                        </div>
 
-                        <label>Controller Address</label>
-                        <input type="text" name="wled_ip" value="{{ closet[1] }}" required>
+                        <label for="closet_name">
+                            Closet Name
+                        </label>
+
+                        <input
+                            id="closet_name"
+                            type="text"
+                            name="closet_name"
+                            value="{{ closet[0] }}"
+                            required
+                        >
+
+                        <label for="wled_ip">
+                            Controller Address
+                        </label>
+
+                        <input
+                            id="wled_ip"
+                            type="text"
+                            name="wled_ip"
+                            value="{{ closet[1] }}"
+                            required
+                        >
 
                         <div class="button-row">
-                            <a href="/dashboard/{{ profile[0] }}" class="btn back-btn">Back</a>
-                            <a href="/closet/{{ profile[0] }}/test" class="btn test-btn">Test Closet</a>
-                            <button type="submit" class="btn save-btn">Save Changes</button>
+
+                            <a
+                                href="/dashboard/{{ profile[0] }}"
+                                class="btn back-btn"
+                            >
+                                Back
+                            </a>
+
+                            <button
+                                type="button"
+                                id="testClosetBtn"
+                                class="btn test-btn"
+                                onclick="testCloset()"
+                            >
+                                Test Closet
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn save-btn"
+                            >
+                                Save Changes
+                            </button>
+
                         </div>
+
+                        <div
+                            id="testResult"
+                            class="test-result"
+                            role="status"
+                            aria-live="polite"
+                        ></div>
+
                     </div>
 
                 </form>
+
             {% else %}
-                <p class="empty-message">No closet assigned yet.</p>
+
+                <p class="empty-message">
+                    No closet is assigned to this profile yet.
+                </p>
+
                 <div class="button-row">
-                    <a href="/dashboard/{{ profile[0] }}" class="btn back-btn">Back to Dashboard</a>
+                    <a
+                        href="/dashboard/{{ profile[0] }}"
+                        class="btn back-btn"
+                    >
+                        Back to Dashboard
+                    </a>
                 </div>
+
             {% endif %}
+
         </div>
     </div>
+
+    {% if closet %}
+    <script>
+        async function testCloset() {
+            const button = document.getElementById("testClosetBtn");
+            const result = document.getElementById("testResult");
+
+            button.disabled = true;
+            button.textContent = "Testing...";
+
+            result.className = "test-result testing";
+            result.textContent =
+                "Testing the closet controller. The LEDs should turn green.";
+
+            try {
+                const response = await fetch(
+                    "/closet/{{ profile[0] }}/test",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.error ||
+                        "The closet controller did not respond."
+                    );
+                }
+
+                result.className = "test-result success";
+                result.textContent =
+                    " Closet test successful! All LED zones turned green.";
+
+                button.textContent = "Test Successful";
+
+                setTimeout(() => {
+                   result.style.display = "none";
+                   result.className = "test-result";
+                }, 3000);
+
+                setTimeout(() => {
+                    button.textContent = "Test Closet";
+                }, 3000);
+
+            } catch (error) {
+                result.className = "test-result error";
+                result.textContent =
+                    " Closet test failed: " + error.message;
+
+                button.textContent = "Try Again";
+
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+    {% endif %}
+
 </body>
 </html>

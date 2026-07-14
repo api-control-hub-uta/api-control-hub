@@ -270,7 +270,8 @@ body.light .recommendation-box {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 12px 0;
+            gap: 12px;
+            margin: 14px 0;
         }
 
         .badge {
@@ -283,6 +284,11 @@ body.light .recommendation-box {
         .online {
             background: rgba(34, 197, 94, 0.18);
             color: #86efac;
+        }
+
+        .offline {
+            background: rgba(239, 68, 68, 0.18);
+            color: #fca5a5;
         }
 
         .active {
@@ -461,8 +467,12 @@ body.light .weather-icon {
             <span class="badge active">{{ wled_ip }}</span>
         </div>
         <div class="status-row">
-            <span>Dashboard</span>
-            <span class="badge online">Online</span>
+            <span>Controller Status</span>
+        {% if controller_online %}
+            <span class="badge active">🟢 Online</span>
+        {% else %}
+            <span class="badge offline">🔴 Offline</span>
+        {% endif %}
         </div>
         <div class="status-row">
             <span>Weather API</span>
@@ -471,12 +481,16 @@ body.light .weather-icon {
             </span>
         </div>
         <div class="status-row">
-            <span>Recommendation Engine</span>
-            <span class="badge active">Active</span>
+            <span>Temperature Unit</span>
+            <span class="badge active">{{ temperature_unit|capitalize }}</span>
         </div>
         <div class="status-row">
-            <span>LED Module</span>
-            <span class="badge active">Ready</span>
+            <span>Location</span>
+            <span class="badge active">{{ location }}</span>
+        </div>
+        <div class="status-row">
+            <span>Last Weather Update</span>
+            <span class="badge active">{{ last_weather_update }}</span>
         </div>
     </div>
 </div>
