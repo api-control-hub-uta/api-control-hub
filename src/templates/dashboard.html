@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <style>
         * {
@@ -87,6 +88,10 @@ body.light .recommendation-box {
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     border-bottom: 1px solid rgba(255,255,255,0.06);
     backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 5000;
+    overflow: visible;
 }
 
         .logo {
@@ -97,6 +102,7 @@ body.light .recommendation-box {
 
         .menu-wrapper {
             position: relative;
+            z-index: 5001;
         }
 
         .profile-btn {
@@ -120,10 +126,10 @@ body.light .recommendation-box {
             background: #1f2937;
             border: 1px solid #374151;
             border-radius: 12px;
-            min-width: 190px;
+            min-width: 220px;
             overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-            z-index: 100;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+            z-index: 9999;
         }
 
         .menu-box.show {
@@ -149,7 +155,7 @@ body.light .recommendation-box {
         }
 
         .hero {
-           background: rgba(15, 23, 42, 0.0.6);
+           background: rgba(15, 23, 42, 0.6);
            padding: 30px;
            border-radius: 20px;
            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
@@ -373,6 +379,147 @@ body.light .empty-message {
 body.light .weather-icon {
     filter: none;
 }
+
+/* Raspberry Pi 7-inch touchscreen */
+@media screen and (max-width: 850px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        font-size: 14px;
+    }
+
+    .topbar {
+        padding: 8px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 5000;
+        overflow: visible;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .profile-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    .menu-box {
+        top: 50px;
+        right: 0;
+        min-width: 220px;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        z-index: 9999;
+    }
+
+    .menu-box a {
+        padding: 14px 15px;
+        font-size: 16px;
+    }
+
+    .dashboard-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+    }
+
+    .hero {
+        padding: 14px;
+        margin-bottom: 12px;
+        border-radius: 14px;
+    }
+
+    .hero h1 {
+        font-size: 26px;
+        margin-bottom: 6px;
+    }
+
+    .hero p {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .hero-chips {
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .chip {
+        padding: 7px 9px;
+        font-size: 11px;
+    }
+
+    .grid-3,
+    .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .info-box {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .info-box h2 {
+        font-size: 19px;
+        margin-bottom: 10px;
+    }
+
+    .info-box p {
+        font-size: 14px;
+        line-height: 1.35;
+        margin: 7px 0;
+    }
+
+    .weather-row {
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .weather-icon {
+        width: 55px;
+        height: 55px;
+    }
+
+    .big-temp {
+        font-size: 34px;
+        margin: 4px 0;
+    }
+
+    .recommendation-box {
+        padding: 12px;
+    }
+
+    .recommendation-box strong {
+        font-size: 23px !important;
+    }
+
+    .status-row {
+        margin: 9px 0;
+        font-size: 13px;
+        align-items: flex-start;
+    }
+
+    .badge {
+        max-width: 55%;
+        padding: 5px 8px;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+        text-align: right;
+    }
+}
     </style>
 </head>
 <body class="{{ theme }}">
@@ -381,13 +528,12 @@ body.light .weather-icon {
         <div class="logo">Smart Closet</div>
 
         <div class="menu-wrapper">
-            <button class="profile-btn" onclick="toggleMenu()">
+            <button class="profile-btn" onclick="toggleMenu(event)">
                 {{ profile[1][0]|upper }}
             </button>
 
             <div class="menu-box" id="dropdownMenu">
                 <a href="/preferences/{{ profile[0] }}">Set Preferences</a>
-                <a href="/recommendation/{{ profile[0] }}">View Recommendation</a>
                 <a href="/profiles/edit/{{ profile[0] }}">Edit Profile</a>
                 <a href="/settings/{{ profile[0] }}">Settings</a>
                 <a href="/closet/{{ profile[0] }}">Manage Closet</a>
@@ -464,7 +610,11 @@ body.light .weather-icon {
 
         <div class="status-row">
             <span>WLED Controller</span>
-            <span class="badge active">{{ wled_ip }}</span>
+            {% if wled_ip %}
+                <span class="badge active">{{ wled_ip }}</span>
+            {% else %}
+                <span class="badge offline">Not Assigned</span>
+            {% endif %}   
         </div>
         <div class="status-row">
             <span>Controller Status</span>
@@ -521,8 +671,9 @@ body.light .weather-icon {
                 {% endif %}
             </div>
         </div>
-    </div>
-    <div class="info-box">
+
+        <div class="grid-2">
+            <div class="info-box">
     <h2>LED Mapping</h2>
     <p><strong>Hot:</strong> {{ led_hot_color }}</p>
     <p><strong>Moderate:</strong> {{ led_moderate_color }}</p>
@@ -546,21 +697,30 @@ body.light .weather-icon {
     {% else %}
         <p class="empty-message">No live LED decision available yet.</p>
     {% endif %}
-</div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        function toggleMenu() {
+        function toggleMenu(event) {
+            event.stopPropagation();
             document.getElementById("dropdownMenu").classList.toggle("show");
         }
 
-        window.onclick = function(event) {
-            if (!event.target.matches('.profile-btn')) {
-                let dropdown = document.getElementById("dropdownMenu");
-                if (dropdown.classList.contains("show")) {
-                    dropdown.classList.remove("show");
-                }
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("dropdownMenu");
+
+            if (!event.target.closest(".menu-wrapper")) {
+                dropdown.classList.remove("show");
             }
-        }
+        });
+    </script>
+    <script>
+        const REFRESH_INTERVAL = 5 * 60 * 1000;
+
+        setInterval(function () {
+            window.location.reload();
+        }, REFRESH_INTERVAL);
     </script>
 
 </body>

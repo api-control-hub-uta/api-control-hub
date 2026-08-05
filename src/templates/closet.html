@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Closet - Smart Closet</title>
 
     <style>
@@ -101,6 +102,11 @@
         .status-badge.offline {
             background: rgba(239, 68, 68, 0.16);
             color: #fca5a5;
+        }
+
+        .status-badge.unconfigured {
+            background: rgba(156, 163, 175, 0.16);
+            color: #d1d5db;
         }
 
         .muted {
@@ -226,25 +232,153 @@
             color: #fca5a5;
         }
 
-        @media (max-width: 800px) {
+        /* Final Raspberry Pi 7-inch touchscreen layout: 800x480 */
+        @media screen and (max-width: 850px) {
+            html,
+            body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
+            body {
+                min-height: 100vh;
+            }
+
             .topbar {
-                padding: 16px 22px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                padding: 8px 12px;
+            }
+
+            .logo {
+                font-size: 21px;
+            }
+
+            .container {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 8px;
+            }
+
+            .box {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                margin: 0 0 3px;
+                font-size: 26px;
+                line-height: 1.05;
+            }
+
+            .subtitle {
+                margin: 0 0 10px;
+                font-size: 12px;
+                line-height: 1.3;
             }
 
             .top-grid {
                 grid-template-columns: 1fr;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+
+            .card {
+                min-width: 0;
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            .closet-card {
+                margin-top: 8px;
+            }
+
+            .section-title {
+                margin-bottom: 7px;
+                padding-bottom: 5px;
+                font-size: 16px;
+                line-height: 1.15;
+            }
+
+            .label-small {
+                margin-bottom: 3px;
+                font-size: 10px;
+            }
+
+            .value-large {
+                font-size: 18px;
+                line-height: 1.15;
+                overflow-wrap: anywhere;
+            }
+
+            .status-badge {
+                padding: 7px 12px;
+                font-size: 14px;
+            }
+
+            .muted {
+                margin-top: 6px;
+                font-size: 12px;
+                line-height: 1.35;
+                overflow-wrap: anywhere;
+            }
+
+            label {
+                margin-top: 8px;
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+
+            input {
+                width: 100%;
+                min-height: 42px;
+                padding: 9px 11px;
+                border-radius: 9px;
+                font-size: 15px;
             }
 
             .button-row {
-                justify-content: flex-start;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-top: 12px;
             }
 
-            h1 {
-                font-size: 34px;
+            .btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                min-height: 44px;
+                padding: 9px 6px;
+                border-radius: 9px;
+                font-size: 13px;
+                text-align: center;
             }
 
-            .box {
-                padding: 22px;
+            .test-result {
+                margin-top: 10px;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            body.light .back-btn {
+                background: #e5e7eb;
+                color: #111827;
+                border: 1px solid #9ca3af;
+            }
+
+            body.light .back-btn:hover {
+                background: #d1d5db;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .button-row {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -324,6 +458,11 @@
             color: #b91c1c;
         }
 
+        body.light .status-badge.unconfigured {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
         body.light .back-btn {
             background: white;
             color: #111827;
@@ -369,144 +508,100 @@
                 Configure the assigned closet hardware and WLED controller.
             </p>
 
-            {% if closet %}
+            <form method="post" action="/closet/{{ profile[0] }}">
 
-                <form method="post" action="/closet/{{ profile[0] }}">
+                <div class="top-grid">
 
-                    <div class="top-grid">
+                    <div class="card">
+                        <div class="section-title">User Information</div>
+                        <div class="label-small">Name</div>
+                        <div class="value-large">{{ profile[1] }}</div>
+                    </div>
 
-                        <div class="card">
-                            <div class="section-title">User Information</div>
+                    <div class="card">
+                        <div class="section-title">Controller Status</div>
 
-                            <div class="label-small">Name</div>
-
-                            <div class="value-large">
-                                {{ profile[1] }}
+                        {% if not closet[2] %}
+                            <div class="status-badge unconfigured">⚪ Not Configured</div>
+                            <div class="muted">
+                                Enter the closet name and WLED controller address below,
+                                then select Save Changes.
                             </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="section-title">Controller Status</div>
-
-                            {% if controller_online %}
-
-                                <div class="status-badge">
-                                    🟢 Online
-                                </div>
-
-                                <div class="muted">
-                                    Controller at
-                                    <strong>{{ closet[1] }}</strong>
-                                    is online and ready for closet testing.
-                                </div>
-
-                            {% else %}
-
-                                <div class="status-badge offline">
-                                    🔴 Offline
-                                </div>
-
-                                <div class="muted">
-                                    Controller at
-                                    <strong>{{ closet[1] }}</strong>
-                                    is not reachable. Check the controller power,
-                                    Wi-Fi connection, or IP address.
-                                </div>
-
-                            {% endif %}
-                        </div>
-
+                        {% elif controller_online %}
+                            <div class="status-badge">🟢 Online</div>
+                            <div class="muted">
+                                Controller at <strong>{{ closet[2] }}</strong>
+                                is online and ready for closet testing.
+                            </div>
+                        {% else %}
+                            <div class="status-badge offline">🔴 Offline</div>
+                            <div class="muted">
+                                Controller at <strong>{{ closet[2] }}</strong>
+                                is not reachable. Check the controller power,
+                                Wi-Fi connection, or IP address.
+                            </div>
+                        {% endif %}
                     </div>
 
-                    <div class="card closet-card">
-
-                        <div class="section-title">
-                            Closet Configuration
-                        </div>
-
-                        <label for="closet_name">
-                            Closet Name
-                        </label>
-
-                        <input
-                            id="closet_name"
-                            type="text"
-                            name="closet_name"
-                            value="{{ closet[0] }}"
-                            required
-                        >
-
-                        <label for="wled_ip">
-                            Controller Address
-                        </label>
-
-                        <input
-                            id="wled_ip"
-                            type="text"
-                            name="wled_ip"
-                            value="{{ closet[1] }}"
-                            required
-                        >
-
-                        <div class="button-row">
-
-                            <a
-                                href="/dashboard/{{ profile[0] }}"
-                                class="btn back-btn"
-                            >
-                                Back
-                            </a>
-
-                            <button
-                                type="button"
-                                id="testClosetBtn"
-                                class="btn test-btn"
-                                onclick="testCloset()"
-                            >
-                                Test Closet
-                            </button>
-
-                            <button
-                                type="submit"
-                                class="btn save-btn"
-                            >
-                                Save Changes
-                            </button>
-
-                        </div>
-
-                        <div
-                            id="testResult"
-                            class="test-result"
-                            role="status"
-                            aria-live="polite"
-                        ></div>
-
-                    </div>
-
-                </form>
-
-            {% else %}
-
-                <p class="empty-message">
-                    No closet is assigned to this profile yet.
-                </p>
-
-                <div class="button-row">
-                    <a
-                        href="/dashboard/{{ profile[0] }}"
-                        class="btn back-btn"
-                    >
-                        Back to Dashboard
-                    </a>
                 </div>
 
-            {% endif %}
+                <div class="card closet-card">
+                    <div class="section-title">Closet Configuration</div>
+
+                    <label for="closet_name">Closet Name</label>
+                    <input
+                        id="closet_name"
+                        type="text"
+                        name="closet_name"
+                        autocomplete="off"
+                        placeholder="Example: Closet 5"
+                        value="{{ closet[1] }}"
+                        required
+                    >
+
+                    <label for="wled_ip">Controller Address</label>
+                    <input
+                        id="wled_ip"
+                        type="text"
+                        name="wled_ip"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        placeholder="Example: 192.168.1.165"
+                        value="{{ closet[2] }}"
+                        required
+                    >
+
+                    <div class="button-row">
+                        <a href="/dashboard/{{ profile[0] }}" class="btn back-btn">Back</a>
+
+                        <button
+                            type="button"
+                            id="testClosetBtn"
+                            class="btn test-btn"
+                            onclick="testCloset()"
+                            {% if not closet[2] %}disabled{% endif %}
+                        >
+                            Test Closet
+                        </button>
+
+                        <button type="submit" class="btn save-btn">Save Changes</button>
+                    </div>
+
+                    <div
+                        id="testResult"
+                        class="test-result"
+                        role="status"
+                        aria-live="polite"
+                    ></div>
+                </div>
+
+            </form>
 
         </div>
     </div>
 
-    {% if closet %}
     <script>
         async function testCloset() {
             const button = document.getElementById("testClosetBtn");
@@ -566,7 +661,6 @@
             }
         }
     </script>
-    {% endif %}
-
+{% include "virtual_keyboard.html" %}
 </body>
 </html>

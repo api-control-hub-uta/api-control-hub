@@ -1,0 +1,368 @@
+<style>
+    .virtual-keyboard {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        background: #1f1f1f;
+        padding: 6px;
+        box-sizing: border-box;
+        z-index: 999999;
+        border-top: 2px solid #555;
+        display: none;
+    }
+
+    .virtual-keyboard.show {
+        display: block;
+    }
+
+    .keyboard-row {
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        margin-bottom: 4px;
+    }
+
+    .virtual-keyboard button {
+        min-width: 34px;
+        height: 38px;
+        padding: 2px 5px;
+        border: none;
+        border-radius: 5px;
+        background: #f2f2f2;
+        color: #111;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .virtual-keyboard button:active {
+        background: #cfcfcf;
+        transform: scale(0.96);
+    }
+
+    .virtual-keyboard button.active {
+        background: #4caf50;
+        color: white;
+    }
+
+    .virtual-keyboard .wide-key {
+        min-width: 62px;
+    }
+
+    .virtual-keyboard .space-key {
+        flex: 1;
+        max-width: 220px;
+    }
+
+    body.keyboard-open {
+        padding-bottom: 230px;
+    }
+
+    @media (max-width: 850px) {
+        .virtual-keyboard {
+            padding: 4px;
+        }
+
+        .keyboard-row {
+            gap: 2px;
+            margin-bottom: 3px;
+        }
+
+        .virtual-keyboard button {
+            min-width: 29px;
+            height: 34px;
+            padding: 1px 3px;
+            font-size: 12px;
+        }
+
+        .virtual-keyboard .wide-key {
+            min-width: 52px;
+        }
+
+        .virtual-keyboard .space-key {
+            max-width: 170px;
+        }
+    }
+</style>
+
+<div id="virtual-keyboard" class="virtual-keyboard">
+    <div class="keyboard-row">
+        <button type="button" data-key="1">1</button>
+        <button type="button" data-key="2">2</button>
+        <button type="button" data-key="3">3</button>
+        <button type="button" data-key="4">4</button>
+        <button type="button" data-key="5">5</button>
+        <button type="button" data-key="6">6</button>
+        <button type="button" data-key="7">7</button>
+        <button type="button" data-key="8">8</button>
+        <button type="button" data-key="9">9</button>
+        <button type="button" data-key="0">0</button>
+    </div>
+
+    <div class="keyboard-row">
+        <button type="button" data-key="q">Q</button>
+        <button type="button" data-key="w">W</button>
+        <button type="button" data-key="e">E</button>
+        <button type="button" data-key="r">R</button>
+        <button type="button" data-key="t">T</button>
+        <button type="button" data-key="y">Y</button>
+        <button type="button" data-key="u">U</button>
+        <button type="button" data-key="i">I</button>
+        <button type="button" data-key="o">O</button>
+        <button type="button" data-key="p">P</button>
+    </div>
+
+    <div class="keyboard-row">
+        <button type="button" data-key="a">A</button>
+        <button type="button" data-key="s">S</button>
+        <button type="button" data-key="d">D</button>
+        <button type="button" data-key="f">F</button>
+        <button type="button" data-key="g">G</button>
+        <button type="button" data-key="h">H</button>
+        <button type="button" data-key="j">J</button>
+        <button type="button" data-key="k">K</button>
+        <button type="button" data-key="l">L</button>
+    </div>
+
+    <div class="keyboard-row">
+        <button type="button" id="shift-key" class="wide-key">Shift</button>
+        <button type="button" data-key="z">Z</button>
+        <button type="button" data-key="x">X</button>
+        <button type="button" data-key="c">C</button>
+        <button type="button" data-key="v">V</button>
+        <button type="button" data-key="b">B</button>
+        <button type="button" data-key="n">N</button>
+        <button type="button" data-key="m">M</button>
+        <button type="button" id="backspace-key" class="wide-key">⌫</button>
+    </div>
+
+    <div class="keyboard-row">
+        <button type="button" data-key="-">-</button>
+        <button type="button" data-key=".">.</button>
+        <button type="button" data-key=",">,</button>
+        <button type="button" data-key=" " class="space-key">Space</button>
+        <button type="button" id="clear-key" class="wide-key">Clear</button>
+        <button type="button" id="done-key" class="wide-key">Done</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const keyboard = document.getElementById("virtual-keyboard");
+    const shiftButton = document.getElementById("shift-key");
+    const backspaceButton = document.getElementById("backspace-key");
+    const clearButton = document.getElementById("clear-key");
+    const doneButton = document.getElementById("done-key");
+
+    let activeInput = null;
+    let shiftEnabled = false;
+
+    const supportedInputs = document.querySelectorAll(
+        'input[type="text"], ' +
+        'input[type="number"], ' +
+        'input[type="email"], ' +
+        'input[type="search"], ' +
+        'input[type="tel"], ' +
+        'input:not([type]), ' +
+        'textarea'
+    );
+
+    function showKeyboard(input) {
+        activeInput = input;
+        keyboard.classList.add("show");
+        document.body.classList.add("keyboard-open");
+
+        setTimeout(function () {
+            input.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }, 100);
+    }
+
+    function hideKeyboard() {
+        keyboard.classList.remove("show");
+        document.body.classList.remove("keyboard-open");
+
+        if (activeInput) {
+            activeInput.blur();
+        }
+
+        activeInput = null;
+        shiftEnabled = false;
+        shiftButton.classList.remove("active");
+    }
+
+    function updateInput(value) {
+        if (!activeInput) {
+            return;
+        }
+
+        activeInput.value = value;
+
+        activeInput.dispatchEvent(
+            new Event("input", { bubbles: true })
+        );
+
+        activeInput.dispatchEvent(
+            new Event("change", { bubbles: true })
+        );
+    }
+
+    function insertKey(key) {
+        if (!activeInput) {
+            return;
+        }
+
+        const isNumberInput = activeInput.type === "number";
+
+        if (isNumberInput) {
+            const allowedNumberKeys = [
+                "0", "1", "2", "3", "4",
+                "5", "6", "7", "8", "9",
+                "-", "."
+            ];
+
+            if (!allowedNumberKeys.includes(key)) {
+                return;
+            }
+
+            updateInput(activeInput.value + key);
+            activeInput.focus();
+            return;
+        }
+
+        if (shiftEnabled && /^[a-z]$/.test(key)) {
+            key = key.toUpperCase();
+        }
+
+        const start =
+            activeInput.selectionStart !== null
+                ? activeInput.selectionStart
+                : activeInput.value.length;
+
+        const end =
+            activeInput.selectionEnd !== null
+                ? activeInput.selectionEnd
+                : activeInput.value.length;
+
+        const newValue =
+            activeInput.value.substring(0, start) +
+            key +
+            activeInput.value.substring(end);
+
+        updateInput(newValue);
+
+        const newCursorPosition = start + key.length;
+
+        activeInput.focus();
+
+        if (activeInput.setSelectionRange) {
+            activeInput.setSelectionRange(
+                newCursorPosition,
+                newCursorPosition
+            );
+        }
+
+        if (shiftEnabled) {
+            shiftEnabled = false;
+            shiftButton.classList.remove("active");
+        }
+    }
+
+    supportedInputs.forEach(function (input) {
+        input.addEventListener("focus", function () {
+            showKeyboard(input);
+        });
+
+        input.addEventListener("click", function () {
+            showKeyboard(input);
+        });
+
+        input.addEventListener("touchstart", function () {
+            showKeyboard(input);
+        });
+    });
+
+    keyboard
+        .querySelectorAll("button[data-key]")
+        .forEach(function (button) {
+            button.addEventListener("click", function () {
+                insertKey(button.dataset.key);
+            });
+
+            button.addEventListener("touchstart", function (event) {
+                event.preventDefault();
+                insertKey(button.dataset.key);
+            });
+        });
+
+    shiftButton.addEventListener("click", function () {
+        shiftEnabled = !shiftEnabled;
+        shiftButton.classList.toggle("active", shiftEnabled);
+    });
+
+    backspaceButton.addEventListener("click", function () {
+        if (!activeInput) {
+            return;
+        }
+
+        if (activeInput.type === "number") {
+            updateInput(activeInput.value.slice(0, -1));
+            activeInput.focus();
+            return;
+        }
+
+        const start =
+            activeInput.selectionStart !== null
+                ? activeInput.selectionStart
+                : activeInput.value.length;
+
+        const end =
+            activeInput.selectionEnd !== null
+                ? activeInput.selectionEnd
+                : activeInput.value.length;
+
+        let newValue = activeInput.value;
+        let newCursorPosition = start;
+
+        if (start !== end) {
+            newValue =
+                activeInput.value.substring(0, start) +
+                activeInput.value.substring(end);
+        } else if (start > 0) {
+            newValue =
+                activeInput.value.substring(0, start - 1) +
+                activeInput.value.substring(end);
+
+            newCursorPosition = start - 1;
+        }
+
+        updateInput(newValue);
+        activeInput.focus();
+
+        if (activeInput.setSelectionRange) {
+            activeInput.setSelectionRange(
+                newCursorPosition,
+                newCursorPosition
+            );
+        }
+    });
+
+    clearButton.addEventListener("click", function () {
+        if (!activeInput) {
+            return;
+        }
+
+        updateInput("");
+        activeInput.focus();
+    });
+
+    doneButton.addEventListener("click", function () {
+        hideKeyboard();
+    });
+});
+</script>

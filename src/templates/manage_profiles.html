@@ -4,22 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Profiles</title>
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
         body {
             margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
             font-family: Arial, sans-serif;
             background-color: #141414;
             color: white;
             text-align: center;
+            overflow-x: hidden;
         }
 
         .container {
+            width: 100%;
             padding: 50px 20px;
         }
 
         h1 {
             font-size: 56px;
-            margin-bottom: 15px;
+            margin: 0 0 15px;
         }
 
         .subtitle {
@@ -49,7 +62,7 @@
         .profile-avatar {
             width: 120px;
             height: 120px;
-            margin: 0 auto 15px auto;
+            margin: 0 auto 15px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -57,13 +70,14 @@
             font-size: 46px;
             font-weight: bold;
             color: white;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
             position: relative;
         }
 
         .profile-name {
             font-size: 24px;
             color: #d1d5db;
+            overflow-wrap: anywhere;
         }
 
         .manage-icon {
@@ -83,10 +97,10 @@
         .action-box {
             display: none;
             background: #1f1f1f;
-            margin-top: 15px;
+            margin-top: 12px;
             padding: 12px;
             border-radius: 10px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
         }
 
         .action-box.show {
@@ -95,8 +109,11 @@
 
         .action-box a,
         .action-box button {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            min-height: 44px;
             margin: 8px 0;
             padding: 10px;
             border: none;
@@ -104,7 +121,6 @@
             text-decoration: none;
             font-size: 15px;
             cursor: pointer;
-            box-sizing: border-box;
             color: white;
         }
 
@@ -130,6 +146,7 @@
 
         .back-link {
             margin-top: 35px;
+            padding-bottom: 20px;
         }
 
         .back-link a {
@@ -141,8 +158,121 @@
         .back-link a:hover {
             color: white;
         }
+
+        /* Raspberry Pi 7-inch touchscreen: 800x480 */
+        @media screen and (max-width: 850px) {
+            body {
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            .container {
+                min-height: 100vh;
+                padding: 14px 12px 18px;
+            }
+
+            h1 {
+                font-size: 34px;
+                line-height: 1;
+                margin-bottom: 5px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 14px;
+            }
+
+            .profiles {
+                flex-wrap: nowrap;
+                align-items: flex-start;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .profile-card {
+                width: calc((100% - 40px) / 5);
+                min-width: 0;
+            }
+
+            .profile-avatar {
+                width: 100%;
+                max-width: 96px;
+                aspect-ratio: 1 / 1;
+                height: auto;
+                margin-bottom: 7px;
+                border-radius: 10px;
+                font-size: 34px;
+            }
+
+            .profile-name {
+                font-size: 14px;
+                line-height: 1.05;
+                min-height: 30px;
+            }
+
+            .manage-icon {
+                right: 7px;
+                bottom: 6px;
+                font-size: 20px;
+            }
+
+            .back-link {
+                margin-top: 14px;
+                padding-bottom: 12px;
+            }
+
+            .back-link a {
+                display: inline-flex;
+                min-height: 44px;
+                align-items: center;
+                justify-content: center;
+                padding: 8px 16px;
+                border: 2px solid #666;
+                border-radius: 8px;
+                font-size: 15px;
+            }
+
+            .action-box {
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                z-index: 1000;
+                width: min(320px, calc(100vw - 32px));
+                margin: 0;
+                padding: 14px;
+                transform: translate(-50%, -50%);
+                border: 1px solid #444;
+            }
+
+            .action-box.show::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                background: rgba(0, 0, 0, 0.72);
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            h1 {
+                font-size: 30px;
+            }
+
+            .profiles {
+                gap: 8px;
+            }
+
+            .profile-card {
+                width: calc((100% - 32px) / 5);
+            }
+
+            .profile-name {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Manage Profiles</h1>
@@ -158,6 +288,7 @@
                         {{ profile[1][0]|upper }}
                         <div class="manage-icon">✎</div>
                     </div>
+
                     <div class="profile-name">{{ profile[1] }}</div>
                 </div>
 
@@ -166,10 +297,7 @@
 
                     <form method="post" action="/profiles/delete/{{ profile[0] }}">
                         <button class="remove-btn" type="submit">Remove</button>
-                    </form>
-
-                    <a class="lock-btn" href="/profiles/lock/{{ profile[0] }}">Lock</a>
-                    <a class="upload-btn" href="/profiles/upload/{{ profile[0] }}">Upload Image</a>
+                    </form>   
                 </div>
             </div>
             {% endfor %}
@@ -182,17 +310,29 @@
 
     <script>
         function toggleActions(actionId) {
-            let allBoxes = document.querySelectorAll(".action-box");
+            const allBoxes = document.querySelectorAll(".action-box");
 
-            allBoxes.forEach(box => {
+            allBoxes.forEach((box) => {
                 if (box.id !== actionId) {
                     box.classList.remove("show");
                 }
             });
 
-            let selectedBox = document.getElementById(actionId);
+            const selectedBox = document.getElementById(actionId);
             selectedBox.classList.toggle("show");
         }
+
+        document.addEventListener("click", function (event) {
+            const clickedProfile = event.target.closest(".profile-click");
+            const clickedActionBox = event.target.closest(".action-box");
+
+            if (!clickedProfile && !clickedActionBox) {
+                document.querySelectorAll(".action-box").forEach((box) => {
+                    box.classList.remove("show");
+                });
+            }
+        });
     </script>
+{% include "virtual_keyboard.html" %}    
 </body>
 </html>

@@ -1,164 +1,371 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Preferences</title>
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
         body {
             margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
             font-family: Arial, sans-serif;
             background-color: #141414;
             color: white;
             text-align: center;
+            overflow-x: hidden;
         }
 
         .container {
+            width: calc(100% - 32px);
             max-width: 760px;
-            margin: 60px auto;
+            margin: 40px auto;
             background: #1f1f1f;
-            padding: 40px;
+            padding: 32px;
             border-radius: 16px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.4);
         }
 
         h1 {
+            margin: 0 0 8px;
             font-size: 42px;
-            margin-bottom: 10px;
         }
 
         .subtitle {
             color: #b3b3b3;
-            margin-bottom: 30px;
-            font-size: 18px;
+            margin-bottom: 24px;
+            font-size: 17px;
+            line-height: 1.4;
         }
 
         form {
             text-align: left;
-            max-width: 500px;
+            max-width: 560px;
             margin: auto;
         }
 
+        .section {
+            margin-top: 18px;
+            padding: 18px;
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 12px;
+        }
+
         h2 {
-            margin-top: 30px;
-            margin-bottom: 15px;
+            margin: 0 0 12px;
             color: #4a90e2;
             font-size: 24px;
         }
 
         label {
             display: block;
-            margin-top: 18px;
-            margin-bottom: 8px;
-            font-size: 18px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .range-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .range-row input {
-            width: 50%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
 
         input {
             width: 100%;
-            padding: 12px;
+            min-height: 46px;
+            padding: 11px 12px;
             border-radius: 8px;
-            border: none;
+            border: 1px solid #555;
+            background: white;
+            color: #111;
             font-size: 16px;
-            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.22);
         }
 
         .hint {
             color: #9ca3af;
-            font-size: 14px;
-            margin-top: 6px;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.4;
         }
 
-        button {
-            margin-top: 30px;
-            width: 100%;
-            padding: 14px;
+        .button-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .save-btn,
+        .back-btn {
+            min-height: 46px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .save-btn {
             border: none;
-            border-radius: 8px;
             background: #4a90e2;
             color: white;
-            font-size: 18px;
             cursor: pointer;
         }
 
-        button:hover {
+        .save-btn:hover {
             background: #357abd;
         }
 
-        .back-link {
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .back-link a {
-            color: #ccc;
-            text-decoration: none;
-        }
-
-        .back-link a:hover {
+        .back-btn {
+            background: #2b2b2b;
             color: white;
+            border: 1px solid #555;
+        }
+
+        .back-btn:hover {
+            background: #3a3a3a;
+        }
+
+        /* Raspberry Pi 7-inch touchscreen: 800x480 */
+        @media screen and (max-width: 850px) {
+            body {
+                min-height: 100vh;
+            }
+
+            .container {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 10px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 27px;
+                line-height: 1.05;
+                margin-bottom: 3px;
+            }
+
+            .subtitle {
+                margin-bottom: 8px;
+                font-size: 12px;
+                line-height: 1.3;
+            }
+
+            form {
+                max-width: 100%;
+            }
+
+            .section {
+                margin-top: 8px;
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            h2 {
+                margin-bottom: 6px;
+                font-size: 16px;
+            }
+
+            label {
+                margin-top: 7px;
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+
+            .range-row {
+                gap: 8px;
+            }
+
+            input {
+                min-height: 42px;
+                padding: 9px 10px;
+                font-size: 14px;
+            }
+
+            .hint {
+                margin-top: 6px;
+                font-size: 11px;
+            }
+
+            .button-row {
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .save-btn,
+            .back-btn {
+                min-height: 44px;
+                padding: 9px 8px;
+                font-size: 13px;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .range-row,
+            .button-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Set Preferences</h1>
+
         <div class="subtitle">
-            Enter your comfort temperature ranges and what you prefer to wear in each condition.
+            Enter your comfort temperature ranges and clothing choices for each condition.
         </div>
 
         <form method="post" action="/preferences/{{ profile[0] }}">
+            <div class="section">
+                <h2>Temperature Preferences</h2>
 
-            <h2>Temperature Preferences</h2>
+                <label for="hot_min">Hot Range</label>
+                <div class="range-row">
+                    <input
+                        id="hot_min"
+                        type="number"
+                        name="hot_min"
+                        placeholder="Min"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                    <input
+                        id="hot_max"
+                        type="number"
+                        name="hot_max"
+                        placeholder="Max"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
 
-            <label>Hot Range</label>
-            <div class="range-row">
-                <input type="number" name="hot_min" placeholder="Min" required>
-                <input type="number" name="hot_max" placeholder="Max" required>
+                <label for="moderate_min">Moderate Range</label>
+                <div class="range-row">
+                    <input
+                        id="moderate_min"
+                        type="number"
+                        name="moderate_min"
+                        placeholder="Min"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                    <input
+                        id="moderate_max"
+                        type="number"
+                        name="moderate_max"
+                        placeholder="Max"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+                <label for="cold_min">Cold Range</label>
+                <div class="range-row">
+                    <input
+                        id="cold_min"
+                        type="number"
+                        name="cold_min"
+                        placeholder="Min"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                    <input
+                        id="cold_max"
+                        type="number"
+                        name="cold_max"
+                        placeholder="Max"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+                <div class="hint">
+                    Extreme cold is treated as any temperature below your cold range.
+                </div>
+                <div class="hint" style="font-size: 0.9rem;">
+                    Use continuous ranges (e.g. Hot 86-120, Moderate 61-85, Cold 32-60).
+                </div>
             </div>
 
-            <label>Moderate Range</label>
-            <div class="range-row">
-                <input type="number" name="moderate_min" placeholder="Min" required>
-                <input type="number" name="moderate_max" placeholder="Max" required>
+            <div class="section">
+                <h2>Clothing Preferences</h2>
+
+                <label for="hot_clothing">Hot weather clothing</label>
+                <input
+                    id="hot_clothing"
+                    type="text"
+                    name="hot_clothing"
+                    placeholder="Example: T-shirt"
+                    autocomplete="off"
+                    required
+                >
+
+                <label for="moderate_clothing">Moderate weather clothing</label>
+                <input
+                    id="moderate_clothing"
+                    type="text"
+                    name="moderate_clothing"
+                    placeholder="Example: Hoodie"
+                    autocomplete="off"
+                    required
+                >
+
+                <label for="cold_clothing">Cold weather clothing</label>
+                <input
+                    id="cold_clothing"
+                    type="text"
+                    name="cold_clothing"
+                    placeholder="Example: Jacket"
+                    autocomplete="off"
+                    required
+                >
+
+                <label for="extreme_cold_clothing">Extreme cold clothing</label>
+                <input
+                    id="extreme_cold_clothing"
+                    type="text"
+                    name="extreme_cold_clothing"
+                    placeholder="Example: Coat"
+                    autocomplete="off"
+                    required
+                >
             </div>
 
-            <label>Cold Range</label>
-            <div class="range-row">
-                <input type="number" name="cold_min" placeholder="Min" required>
-                <input type="number" name="cold_max" placeholder="Max" required>
+            <div class="button-row">
+                <button type="submit" class="save-btn">Save Preferences</button>
+                <a href="/dashboard/{{ profile[0] }}" class="back-btn">Back to Dashboard</a>
             </div>
-
-            <div class="hint">
-                Extreme cold will be treated as temperatures below your cold range.
-            </div>
-
-            <h2>Clothing Preferences</h2>
-
-            <label>What would you wear when it is hot?</label>
-            <input type="text" name="hot_clothing" placeholder="Example: T-shirt" required>
-
-            <label>What would you wear when it is moderate?</label>
-            <input type="text" name="moderate_clothing" placeholder="Example: Hoodie" required>
-
-            <label>What would you wear when it is cold?</label>
-            <input type="text" name="cold_clothing" placeholder="Example: Jacket" required>
-
-            <label>What would you wear when it is extreme cold?</label>
-            <input type="text" name="extreme_cold_clothing" placeholder="Example: Coat" required>
-
-            <button type="submit">Save Preferences</button>
         </form>
-
-        <div class="back-link">
-            <a href="/dashboard/{{ profile[0] }}">← Back to Dashboard</a>
-        </div>
     </div>
+{% include "virtual_keyboard.html" %}
 </body>
 </html>

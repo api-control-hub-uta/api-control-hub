@@ -50,7 +50,7 @@ def get_closet_for_profile(profile_id):
     if closet:
         return closet
 
-    return ("Default Closet", DEFAULT_WLED_IP, "unassigned")  
+    return ("No Closet Connected", "", "unassigned") 
 
 
 # HOME PAGE
@@ -109,12 +109,48 @@ def save_profile(name: str = Form(...)):
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO users (name) VALUES (?)", (name,))
-    conn.commit()
-    conn.close()
+    try:
+        clean_name = name.strip()
+
+        if not clean_name:
+            return HTMLResponse(
+                "<h2>Profile name cannot be empty.</h2>"
+                '<a href="/profiles/new">Go Back</a>',
+                status_code=400
+            )
+
+        cur.execute("SELECT COUNT(*) FROM users")
+        profile_count = cur.fetchone()[0]
+
+        if profile_count >= 5:
+            return HTMLResponse(
+                "<h2>Maximum of five profiles has already been reached.</h2>"
+                '<a href="/">Go Back</a>',
+                status_code=400
+            )
+
+        # Create the profile only.
+        cur.execute(
+            "INSERT INTO users (name) VALUES (?)",
+            (clean_name,)
+        )
+
+        conn.commit()
+
+    except Exception as error:
+        conn.rollback()
+        print("Create profile error:", error)
+
+        return HTMLResponse(
+            "<h2>Unable to create the profile.</h2>"
+            '<a href="/profiles/new">Go Back</a>',
+            status_code=500
+        )
+
+    finally:
+        conn.close()
 
     return RedirectResponse(url="/", status_code=303)
-
 
 # EDIT PROFILE PAGE
 @app.get("/profiles/edit/{profile_id}", response_class=HTMLResponse)
@@ -156,11 +192,45 @@ def delete_profile(profile_id: int):
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("DELETE FROM preferences WHERE user_id = ?", (profile_id,))
-    cur.execute("DELETE FROM users WHERE id = ?", (profile_id,))
+    try:
+        # Release the closet so another profile can use it.
+        cur.execute("""
+            UPDATE closets
+            SET user_id = NULL,
+                status = 'unassigned'
+            WHERE user_id = ?
+        """, (profile_id,))
 
-    conn.commit()
-    conn.close()
+        # Remove profile-specific data.
+        cur.execute(
+            "DELETE FROM preferences WHERE user_id = ?",
+            (profile_id,)
+        )
+
+        cur.execute(
+            "DELETE FROM settings WHERE user_id = ?",
+            (profile_id,)
+        )
+
+        cur.execute(
+            "DELETE FROM users WHERE id = ?",
+            (profile_id,)
+        )
+
+        conn.commit()
+
+    except Exception as error:
+        conn.rollback()
+        print("Delete profile error:", error)
+
+        return HTMLResponse(
+            "<h2>Unable to delete the profile.</h2>"
+            '<a href="/profiles">Go Back</a>',
+            status_code=500
+        )
+
+    finally:
+        conn.close()
 
     return RedirectResponse(url="/profiles", status_code=303)
 
@@ -228,29 +298,34 @@ def settings_page(profile_id: int, request: Request):
             "settings": settings
         }
     )
-# Manage Closet
+# MANAGE CLOSET PAGE
 @app.get("/closet/{profile_id}", response_class=HTMLResponse)
 def closet_page(request: Request, profile_id: int):
-
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM users WHERE id = ?", (profile_id,))
+    cur.execute(
+        "SELECT id, name FROM users WHERE id = ?",
+        (profile_id,)
+    )
     profile = cur.fetchone()
 
-    
+    if not profile:
+        conn.close()
+        return HTMLResponse(
+            "<h1>Profile not found</h1>",
+            status_code=404
+        )
+
     cur.execute("""
-        SELECT closet_name, wled_ip, status
+        SELECT closet_id, closet_name, wled_ip, status
         FROM closets
         WHERE user_id = ?
+        LIMIT 1
     """, (profile_id,))
+
     closet = cur.fetchone()
-    controller_online = False
 
-    if closet:
-         controller_online = check_wled_online(closet[1])
-
-    
     cur.execute("""
         SELECT theme
         FROM settings
@@ -261,6 +336,15 @@ def closet_page(request: Request, profile_id: int):
     theme = theme_row[0] if theme_row else "dark"
 
     conn.close()
+
+    # New profile with no closet yet
+    if not closet:
+        closet = (None, "", "", "unassigned")
+
+    controller_online = False
+
+    if closet[2]:
+        controller_online = check_wled_online(closet[2])
 
     return templates.TemplateResponse(
         request,
@@ -282,18 +366,59 @@ def update_closet(
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("""
-        UPDATE closets
-        SET closet_name = ?,
-            wled_ip = ?,
-            status = 'configured'
-        WHERE user_id = ?
-    """, (closet_name, wled_ip, profile_id))
+    try:
+        closet_name = closet_name.strip()
+        wled_ip = wled_ip.strip()
 
-    conn.commit()
-    conn.close()
+        cur.execute("""
+            SELECT closet_id
+            FROM closets
+            WHERE user_id = ?
+            LIMIT 1
+        """, (profile_id,))
 
-    return RedirectResponse(url=f"/closet/{profile_id}", status_code=303)
+        existing_closet = cur.fetchone()
+
+        if existing_closet:
+            cur.execute("""
+                UPDATE closets
+                SET closet_name = ?,
+                    wled_ip = ?,
+                    status = 'configured'
+                WHERE user_id = ?
+            """, (
+                closet_name,
+                wled_ip,
+                profile_id
+            ))
+        else:
+            cur.execute("""
+                INSERT INTO closets (
+                    user_id,
+                    closet_name,
+                    wled_ip,
+                    status
+                )
+                VALUES (?, ?, ?, 'configured')
+            """, (
+                profile_id,
+                closet_name,
+                wled_ip
+            ))
+
+        conn.commit()
+
+    except Exception as error:
+        conn.rollback()
+        print("Closet save error:", error)
+
+    finally:
+        conn.close()
+
+    return RedirectResponse(
+        url=f"/closet/{profile_id}",
+        status_code=303
+    )
 
 
 @app.post("/closet/{profile_id}/test")
@@ -535,9 +660,9 @@ def get_weather_category(temp, preferences):
 
     if hot_min <= temp <= hot_max:
         return "hot"
-    elif moderate_min <= temp < moderate_max:
+    elif moderate_min <= temp <= moderate_max:
         return "moderate"
-    elif cold_min <= temp < cold_max:
+    elif cold_min <= temp <= cold_max:
         return "cold"
     else:
         return "extreme_cold"
@@ -669,7 +794,11 @@ def dashboard(profile_id: int, request: Request):
     theme = settings[6]
 
     closet_name, wled_ip, closet_status = get_closet_for_profile(profile_id)
-    controller_online = check_wled_online(wled_ip)
+
+    controller_online = False
+
+    if wled_ip:
+        controller_online = check_wled_online(wled_ip)
 
     weather = get_current_weather(location, temperature_unit)
 
@@ -693,15 +822,15 @@ def dashboard(profile_id: int, request: Request):
         weather_category = get_weather_category(temp_for_logic, preferences)
         city_name = f'{weather["city"]}, {weather["country"]}'
 
-        if weather_category:
-           selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
-           weather_category,
-           led_hot_color,
-           led_moderate_color,
-           led_cold_color,
-           led_extreme_cold_color,
-           wled_ip
-           )
+        if weather_category and wled_ip:
+            selected_led_color, selected_led_rgb, wled_applied = apply_dashboard_led_color(
+                weather_category,
+                led_hot_color,
+                led_moderate_color,
+                led_cold_color,
+                led_extreme_cold_color,
+                wled_ip
+            )
 
     if preferences and temperature_unit == "celsius":
         display_preferences = (
@@ -787,6 +916,43 @@ def save_preferences(
     cold_clothing: str = Form(...),
     extreme_cold_clothing: str = Form(...)
 ):
+        # Validate each individual range.
+    if hot_min > hot_max:
+        return HTMLResponse(
+            "<h2>Hot minimum cannot be greater than hot maximum.</h2>"
+            f'<a href="/preferences/{profile_id}">Go Back</a>',
+            status_code=400
+        )
+
+    if moderate_min > moderate_max:
+        return HTMLResponse(
+            "<h2>Moderate minimum cannot be greater than moderate maximum.</h2>"
+            f'<a href="/preferences/{profile_id}">Go Back</a>',
+            status_code=400
+        )
+
+    if cold_min > cold_max:
+        return HTMLResponse(
+            "<h2>Cold minimum cannot be greater than cold maximum.</h2>"
+            f'<a href="/preferences/{profile_id}">Go Back</a>',
+            status_code=400
+        )
+
+    # Require continuous ranges with no gaps or overlaps.
+    if hot_min != moderate_max + 1:
+        return HTMLResponse(
+            "<h2>Hot minimum must be exactly one degree above Moderate maximum.</h2>"
+            f'<a href="/preferences/{profile_id}">Go Back</a>',
+            status_code=400
+        )
+
+    if moderate_min != cold_max + 1:
+        return HTMLResponse(
+            "<h2>Moderate minimum must be exactly one degree above Cold maximum.</h2>"
+            f'<a href="/preferences/{profile_id}">Go Back</a>',
+            status_code=400
+        )
+
     conn = get_conn()
     cur = conn.cursor()
 
